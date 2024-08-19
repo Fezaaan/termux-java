@@ -1,0 +1,65 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# Setup
+set -e
+shopt -s expand_aliases
+alias ee='echo -e'
+
+# Greetings
+echo
+ee "\e[93mThis script will install SapMachine Java in Termux."
+ee "\e[93mScript written for installing SapMachine Java by Fezaaan."
+echo
+
+# Checking for existing Java installation
+if [ -e $PREFIX/bin/java ]
+then
+    ee "\e[32mSapMachine Java is already installed!"
+    echo
+    exit
+else
+    # Checking the architecture
+    case `dpkg --print-architecture` in
+    aarch64)
+        archname="aarch64"; ;;
+    arm64)
+        archname="aarch64"; ;;
+    armhf)
+        archname="arm"; ;;
+    armv7l)
+        archname="arm"; ;;
+    arm)
+        archname="arm"; ;;
+    *)
+        ee "\e[91mERROR: Unknown architecture."; echo; exit ;;
+    esac
+
+    # Actual installation
+    ee "\e[32m[*] \e[34mDownloading SapMachine JDK-11 (~70Mb) for ${archname}...  🕛This will take some time, so better make a coffee.🕛"
+    mkdir -p $HOME/Fezaaan/javaSAP
+    cd $HOME/Fezaaan/javaSAP
+    wget https://github.com/SAP/SapMachine/releases/download/sapmachine-11.0.24/sapmachine-jdk-11.0.24_linux-aarch64_bin.tar.gz -q
+
+    ee "\e[32m[*] \e[34mMoving JDK to system..."
+    mv sapmachine-jdk-11.0.24_linux-aarch64_bin.tar.gz $PREFIX/share
+
+    ee "\e[32m[*] \e[34mExtracting JDK..."
+    cd $PREFIX/share
+    tar -xzf sapmachine-jdk-11.0.24_linux-aarch64_bin.tar.gz
+
+    ee "\e[32m[*] \e[34mSetting up JAVA_HOME..."
+    export JAVA_HOME=$PREFIX/share/sapmachine-jdk-11.0.24
+    echo "export JAVA_HOME=$PREFIX/share/sapmachine-jdk-11.0.24" >> $HOME/.profile
+    echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> $HOME/.profile
+
+    ee "\e[32m[*] \e[34mCopying Java wrapper scripts to bin..."
+    cp -r $PREFIX/share/sapmachine-jdk-11.0.24/bin/* $PREFIX/bin
+
+    ee "\e[32m[*] \e[34mCleaning up temporary files..."
+    rm -f $PREFIX/share/sapmachine-jdk-11.0.24_linux-aarch64_bin.tar.gz
+
+    echo
+    ee "\e[32mSapMachine Java was successfully installed!\e[39m"
+    echo "Enjoy your new Java installation!"
+    echo
+fi
